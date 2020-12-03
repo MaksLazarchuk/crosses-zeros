@@ -3,11 +3,18 @@
     <div class="people">
       <div class="player1 player">
         <h2>Ім'я гравця</h2>
-        <input class="text" v-model="player1" type="text" />
+        <input class="text" v-model="players[0]" type="text" />
       </div>
       <div class="player2 player">
         <h2>Ім'я гравця</h2>
-        <input class="text" v-model="player2" type="text" />
+        <input class="text" v-model="players[1]" type="text" />
+      </div>
+      <div class="player-active player" v-if="!isGameOver">
+        <h2>Ходить</h2>
+        <input class="text" disabled :value="players[activePlayer]" type="text" />
+      </div>
+      <div class="player-active player">
+        <button class="restart" @click="restart">&#8634;</button>
       </div>
     </div>
     <div id="background">
@@ -15,36 +22,110 @@
       <div class="line horizontally-bottom" />
       <div class="line vertically-left" />
       <div class="line vertically-right" />
+  
       <div class="cell-box">
-        <div class="cell cell1">
-          <div class="crosses">
-            <div class="line-cross line1-crosses" />
-            <div class="line-cross line2-crosses" />
-          </div>
+        <div
+          v-for="cell in 9"
+          :key="cell"
+          class="cell"
+          @click="move(cell)"
+          :class="{ [`cell${cell}`]: true, active: moves.includes(cell) }"
+        >
+          <template v-if="moves.includes(cell)">
+            <Cross v-if="moves.indexOf(cell) % 2 === 0" />
+            <Zero v-else />
+          </template>
         </div>
-        <div class="cell cell2">
-          <div class="zeros" />
-        </div>
-        <div class="cell cell3"></div>
-        <div class="cell cell4"></div>
-        <div class="cell cell5"></div>
-        <div class="cell cell6"></div>
-        <div class="cell cell7"></div>
-        <div class="cell cell8"></div>
-        <div class="cell cell9"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Cross from './components/Cross.vue';
+import Zero from './components/Zero.vue';
+
+const winCombination = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+
+  [1, 4, 7],
+  [2, 5, 8],
+  [3, 6, 9],
+
+  [1, 5, 9],
+  [3, 5, 7],
+];
+
 export default {
+  components: { Cross, Zero },
   data() {
     return {
-      player1: "Nazar",
-      player2: "Max",
+      players: [
+        "Nazar",
+        "Max",
+      ],
+
+      moves: [],
+
+      isGameOver: false,
     };
   },
+
+  methods: {
+    move(value) {
+      if (this.isGameOver) return;
+      if (this.moves.includes(value)) return;
+
+      this.moves.push(value);
+
+      this.checkWinOrDraw();
+    },
+
+    checkWinOrDraw() {
+      if (this.moves.length < 5) return;
+
+      // перевіряємо хто ходив в останній раз
+      const playerIndex = this.moves.length % 2 === 0 ? 1 : 0;
+
+      // фільтрую всі ходи, які зробив гравець (через один)
+      const playerMoves = this.moves.filter((value, i) => i % 2  === playerIndex);
+    
+      // виграш буде true, якщо є хоч одна комбінація з масиву winCombination
+      const isWin = winCombination.some(
+        // така, що кожен її хід
+        compination => compination.every(
+          // співпадає з ходом гравця
+          move => playerMoves.includes(move)
+        )
+      );
+
+      if (isWin) {
+        this.isGameOver = true;
+        alert(`Гра зацінчилася. Виграв гравець ${this.players[playerIndex]}`);
+        return;
+      }
+
+      if (this.moves.length === 9) {
+        this.isGameOver = true;
+        alert('Нічия. Кінець гри!');
+      }
+    },
+
+    restart() {
+      this.moves = [];
+      this.isGameOver = false;
+
+      this.players.reverse();
+    }
+  },
+
+  computed: {
+    activePlayer() {
+      return this.moves.length % 2;
+    }
+  }
 };
 </script>
 
@@ -123,34 +204,24 @@ h2 {
 .cell {
   height: 200px;
   width: 200px;
+  cursor: pointer;
+  transition: background-color .2s ease-in-out;
 }
-.line-cross {
-  background-color: white;
-  height: 175px;
-  width: 30px;
-  border-radius: 20px;
-  margin: 12.5px;
+.cell:hover {
+  background: rgba(0, 0, 250, .5);;
 }
-.crosses {
-  height: 200px;
-  position: absolute;
-  width: 200px;
+.cell.active {
+  pointer-events: none;
 }
-.line1-crosses {
-  margin-left: 85px;
-  transform: rotate(-45deg);
-}
-.line2-crosses {
-  margin-left: 85px;
-  margin-top: -187px;
-  transform: rotate(45deg);
-}
-.zeros {
-  width: 90px;
-  height: 90px;
-  position: absolute;
-  border: solid 30px white;
-  border-radius: 50%;
-  margin: 25px;
+
+.restart {
+  width: 50px;
+  height: 50px;
+  font-size: 30px;
+  background: rgba(0, 0, 250, .5);
+  color: white;
+  border: 0;
+  border-radius: 5px;
+  margin-top: 40px;
 }
 </style>
