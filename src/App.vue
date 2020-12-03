@@ -11,7 +11,12 @@
       </div>
       <div class="player-active player" v-if="!isGameOver">
         <h2>Ходить</h2>
-        <input class="text" disabled :value="players[activePlayer]" type="text" />
+        <input
+          class="text"
+          disabled
+          :value="players[activePlayer]"
+          type="text"
+        />
       </div>
       <div class="player-active player">
         <button class="restart" @click="restart">&#8634;</button>
@@ -22,7 +27,7 @@
       <div class="line horizontally-bottom" />
       <div class="line vertically-left" />
       <div class="line vertically-right" />
-  
+
       <div class="cell-box">
         <div
           v-for="cell in 9"
@@ -42,8 +47,8 @@
 </template>
 
 <script>
-import Cross from './components/Cross.vue';
-import Zero from './components/Zero.vue';
+import Cross from "./components/Cross.vue";
+import Zero from "./components/Zero.vue";
 
 const winCombination = [
   [1, 2, 3],
@@ -62,10 +67,7 @@ export default {
   components: { Cross, Zero },
   data() {
     return {
-      players: [
-        "Nazar",
-        "Max",
-      ],
+      players: ["Nazar", "Max"],
 
       moves: [],
 
@@ -90,26 +92,42 @@ export default {
       const playerIndex = this.moves.length % 2 === 0 ? 1 : 0;
 
       // фільтрую всі ходи, які зробив гравець (через один)
-      const playerMoves = this.moves.filter((value, i) => i % 2  === playerIndex);
-    
+      const playerMoves = this.moves.filter(
+        (value, i) => i % 2 === playerIndex
+      );
+
       // виграш буде true, якщо є хоч одна комбінація з масиву winCombination
       const isWin = winCombination.some(
         // така, що кожен її хід
-        compination => compination.every(
-          // співпадає з ходом гравця
-          move => playerMoves.includes(move)
-        )
+        (compination) =>
+          compination.every(
+            // співпадає з ходом гравця
+            (move) => playerMoves.includes(move)
+          )
       );
 
       if (isWin) {
         this.isGameOver = true;
-        alert(`Гра зацінчилася. Виграв гравець ${this.players[playerIndex]}`);
+        this.$toasted.show(
+          `Гра зацінчилася. Виграв гравець ${this.players[playerIndex]}`,
+          {
+            theme: "outline",
+            position: "bottom-right",
+            duration: 5000,
+            className: "myToast",
+          }
+        );
         return;
       }
 
       if (this.moves.length === 9) {
         this.isGameOver = true;
-        alert('Нічия. Кінець гри!');
+        this.$toasted.show("Нічия. Кінець гри!", {
+          theme: "outline",
+          position: "bottom-right",
+          duration: 5000,
+          className: "myToast",
+        });
       }
     },
 
@@ -118,14 +136,14 @@ export default {
       this.isGameOver = false;
 
       this.players.reverse();
-    }
+    },
   },
 
   computed: {
     activePlayer() {
       return this.moves.length % 2;
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -205,10 +223,10 @@ h2 {
   height: 200px;
   width: 200px;
   cursor: pointer;
-  transition: background-color .2s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
 }
 .cell:hover {
-  background: rgba(0, 0, 250, .5);;
+  background: rgba(0, 0, 250, 0.5);
 }
 .cell.active {
   pointer-events: none;
@@ -218,10 +236,13 @@ h2 {
   width: 50px;
   height: 50px;
   font-size: 30px;
-  background: rgba(0, 0, 250, .5);
+  background: rgba(0, 0, 250, 0.5);
   color: white;
   border: 0;
   border-radius: 5px;
   margin-top: 40px;
+}
+.myToast {
+  font-size: 32px !important;
 }
 </style>
