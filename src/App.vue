@@ -186,7 +186,7 @@ h2 {
 #background {
   height: 600px;
   width: 600px;
-  margin-top: 100px;
+  margin-top: 30px;
   margin-left: auto;
   margin-right: auto;
   border-radius: 6px;
